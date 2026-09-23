@@ -5,7 +5,7 @@ dotenv.config({ override: true });
 
 export const config = {
   port: process.env.PORT || 5000,
-  clientUrl: process.env.CLIENT_URL || 'https://access-ai-phi.vercel.app',
+  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
   nodeEnv: process.env.NODE_ENV || 'development',
   jwtSecret: process.env.JWT_SECRET || 'accessai_dev_fallback_jwt_secret_do_not_use_in_prod',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',

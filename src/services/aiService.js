@@ -85,7 +85,7 @@ export const aiService = {
       const formData = new FormData();
       formData.append('image', fileOrBase64);
 
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://accessai-backend.onrender.com/api';
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       res = await fetch(`${API_BASE_URL}/ai/image`, {
         method: 'POST',
         headers: {

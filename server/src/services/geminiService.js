@@ -23,7 +23,40 @@ const getGenAIClient = () => {
   return new GoogleGenAI({ apiKey: config.geminiApiKey });
 };
 
-const FALLBACK_MODELS = ['gemini-3.5-flash', 'gemini-3.7-flash', 'gemini-3.8-flash'];
+const FALLBACK_MODELS = ['gemini-3.6-flash', 'gemini-3.5-flash'];
+
+const mapGeminiError = (error, defaultMessage) => {
+  if (error.isConfigError) return error;
+  const isRateLimit =
+    error.status === 429 ||
+    (error.message &&
+      (error.message.includes('429') ||
+        error.message.includes('quota') ||
+        error.message.includes('RESOURCE_EXHAUSTED')));
+  const isServiceUnavailable =
+    error.status === 503 ||
+    (error.message && (error.message.includes('503') || error.message.includes('UNAVAILABLE')));
+
+  if (isRateLimit) {
+    const rateLimitError = new Error(
+      'AI service rate limit reached. Please wait a moment and try again.'
+    );
+    rateLimitError.status = 429;
+    return rateLimitError;
+  }
+
+  if (isServiceUnavailable) {
+    const serviceError = new Error(
+      'AI service is temporarily unavailable. Please try again in a few moments.'
+    );
+    serviceError.status = 503;
+    return serviceError;
+  }
+
+  const genericError = new Error(defaultMessage);
+  genericError.status = 502;
+  return genericError;
+};
 
 const generateWithFallback = async (ai, payload) => {
   const modelsToTry = [config.geminiModel, ...FALLBACK_MODELS.filter(m => m !== config.geminiModel)];
@@ -85,11 +118,8 @@ ${text}`;
 
       return response.text.trim();
     } catch (error) {
-      if (error.isConfigError) throw error;
       console.error('[Gemini Service Error in simplifyText]:', error.message || error);
-      const safeError = new Error('Failed to generate simplified text from AI service.');
-      safeError.status = 502;
-      throw safeError;
+      throw mapGeminiError(error, 'Failed to generate simplified text from AI service.');
     }
   },
 
@@ -128,11 +158,8 @@ ${question}`;
 
       return response.text.trim();
     } catch (error) {
-      if (error.isConfigError) throw error;
       console.error('[Gemini Service Error in answerQuestion]:', error.message || error);
-      const safeError = new Error('Failed to retrieve answer from AI service.');
-      safeError.status = 502;
-      throw safeError;
+      throw mapGeminiError(error, 'Failed to retrieve answer from AI service.');
     }
   },
 
@@ -176,11 +203,8 @@ Guidelines:
 
       return response.text.trim();
     } catch (error) {
-      if (error.isConfigError) throw error;
       console.error('[Gemini Service Error in analyzeImage]:', error.message || error);
-      const safeError = new Error('Failed to analyze image with AI service.');
-      safeError.status = 502;
-      throw safeError;
+      throw mapGeminiError(error, 'Failed to analyze image with AI service.');
     }
   },
 
@@ -218,11 +242,8 @@ Instructions:
 
       return response.text.trim();
     } catch (error) {
-      if (error.isConfigError) throw error;
       console.error('[Gemini Service Error in processVoiceQuery]:', error.message || error);
-      const safeError = new Error('Failed to process voice query with AI service.');
-      safeError.status = 502;
-      throw safeError;
+      throw mapGeminiError(error, 'Failed to process voice query with AI service.');
     }
   },
 
@@ -287,11 +308,8 @@ ${text}`;
         detectedLanguage: sourceLanguage !== 'Auto' ? sourceLanguage : 'Unknown',
       };
     } catch (error) {
-      if (error.isConfigError) throw error;
       console.error('[Gemini Service Error in translateText]:', error.message || error);
-      const safeError = new Error('Failed to translate text with AI service.');
-      safeError.status = 502;
-      throw safeError;
+      throw mapGeminiError(error, 'Failed to translate text with AI service.');
     }
   },
 };

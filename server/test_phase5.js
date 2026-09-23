@@ -72,7 +72,7 @@ async function runPhase5Tests() {
     assert(validSimplifyData.success === true, 'Status 200 OK with live Gemini response');
     assert(Boolean(validSimplifyData.data?.simplifiedText), 'Simplified text received');
   } else {
-    assert(validSimplifyRes.status === 503 || validSimplifyRes.status === 502, 'Handled missing/unconfigured API key safely with HTTP 503/502');
+    assert(validSimplifyRes.status === 503 || validSimplifyRes.status === 502 || validSimplifyRes.status === 429, 'Handled AI service safely with HTTP 503/502/429');
     assert(validSimplifyData.success === false, 'Safe error message returned without crashing');
   }
 
@@ -124,7 +124,7 @@ async function runPhase5Tests() {
     assert(validAskData.success === true, 'Status 200 OK with live Gemini answer');
     assert(Boolean(validAskData.data?.answer), 'Answer text received');
   } else {
-    assert(validAskRes.status === 503 || validAskRes.status === 502, 'Handled API call safely with 503/502');
+    assert(validAskRes.status === 503 || validAskRes.status === 502 || validAskRes.status === 429, 'Handled API call safely with 503/502/429');
   }
 
   // --- TEST E: Missing question ---
@@ -160,7 +160,7 @@ async function runPhase5Tests() {
   if (validImageRes.status === 200) {
     assert(validImageData.success === true, 'Status 200 OK with image analysis');
   } else {
-    assert(validImageRes.status === 503 || validImageRes.status === 502, 'Handled image analysis safely with 503/502');
+    assert(validImageRes.status === 503 || validImageRes.status === 502 || validImageRes.status === 429, 'Handled image analysis safely with 503/502/429');
   }
 
   // --- TEST G: Unsupported image type ---

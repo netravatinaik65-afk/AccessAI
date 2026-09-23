@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Sparkles,
-  Info,
   X,
   Layers,
   LogOut,
@@ -15,7 +14,6 @@ import {
   MicOff,
   Volume2,
   VolumeX,
-  Square,
   Copy,
   Check,
   Languages,
@@ -75,12 +73,19 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // Verify token and load profile with accessibility preferences
+    const token = authService.getToken();
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     authService.getProfile().then((profile) => {
       if (profile) {
         setCurrentUser(profile);
+      } else {
+        navigate('/login');
       }
     });
-  }, []);
+  }, [navigate]);
 
   const handleLogout = () => {
     authService.logout();
